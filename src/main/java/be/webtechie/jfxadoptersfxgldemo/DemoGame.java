@@ -11,11 +11,21 @@ public class DemoGame extends GameApplication {
 
     @Override
     protected void initSettings(GameSettings settings) {
-        settings.setMainMenuEnabled(true);
+        settings.setWidth(1280);
+        settings.setHeight(720);
+    }
+
+    @Override
+    protected void initInput() {
     }
 
     @Override
     protected void initGame() {
+
+    }
+
+    @Override
+    protected void initPhysics() {
 
     }
 }

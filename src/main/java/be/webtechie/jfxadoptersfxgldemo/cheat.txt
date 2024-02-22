@@ -1,0 +1,81 @@
+package be.webtechie.jfxadoptersfxgldemo;
+
+import com.almasb.fxgl.animation.Interpolators;
+import com.almasb.fxgl.app.GameApplication;
+import com.almasb.fxgl.app.GameSettings;
+import com.almasb.fxgl.dsl.components.ProjectileComponent;
+import com.almasb.fxgl.entity.Entity;
+import javafx.geometry.Point2D;
+import javafx.scene.input.KeyCode;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
+
+import static com.almasb.fxgl.dsl.FXGL.*;
+
+public class DemoGame extends GameApplication {
+
+    public enum Type {
+        BULLET, PLAYER, ENEMY
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    protected void initSettings(GameSettings settings) {
+        settings.setWidth(1280);
+        settings.setHeight(720);
+    }
+
+    @Override
+    protected void initInput() {
+        onKey(KeyCode.UP, () -> byType(Type.PLAYER).getFirst().translateY(-5));
+        onKey(KeyCode.DOWN, () -> byType(Type.PLAYER).getFirst().translateY(5));
+        onKey(KeyCode.LEFT, () -> byType(Type.PLAYER).getFirst().translateX(-5));
+        onKey(KeyCode.RIGHT, () -> byType(Type.PLAYER).getFirst().translateX(5));
+    }
+
+    @Override
+    protected void initGame() {
+        spawnPlayer(getAppWidth() / 2D - 20, getAppHeight() / 2D - 20);
+
+        run(() -> {
+            spawnBullet(random(0, getAppWidth() - 40), 0, random(-1, 1), 1);
+        }, Duration.millis(100));
+    }
+
+    @Override
+    protected void initPhysics() {
+        onCollisionBegin(Type.PLAYER, Type.BULLET, (p, b) -> {
+            b.removeFromWorld();
+
+            animationBuilder()
+                    .interpolator(Interpolators.EXPONENTIAL.EASE_OUT())
+                    .rotate(p)
+                    .from(0)
+                    .to(360)
+                    .buildAndPlay();
+        });
+    }
+
+    private Entity spawnBullet(double x, double y, double dirX, double dirY) {
+        return entityBuilder()
+                .at(x, y)
+                .type(Type.BULLET)
+                .viewWithBBox(new Rectangle(20, 4))
+                .with(new ProjectileComponent(new Point2D(dirX, dirY), 250).allowRotation(true))
+                .collidable()
+                .buildAndAttach();
+    }
+
+    private Entity spawnPlayer(double x, double y) {
+        return entityBuilder()
+                .at(x, y)
+                .type(Type.PLAYER)
+                .viewWithBBox(new Rectangle(40, 40, Color.BLUE))
+                .collidable()
+                .buildAndAttach();
+    }
+}
