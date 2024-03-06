@@ -75,6 +75,16 @@ public class DemoGame extends GameApplication {
                     .from(new Point2D(1, 1))
                     .to(new Point2D(3, 3))
                     .buildAndPlay();
+
+            animationBuilder()
+                    .duration(Duration.seconds(0.4))
+                    .autoReverse(true)
+                    .repeat(2)
+                    .interpolator(Interpolators.EXPONENTIAL.EASE_OUT())
+                    .translate(text)
+                    .from(new Point2D(150, 150))
+                    .to(new Point2D(300, 150))
+                    .buildAndPlay();
         });
 
         addUINode(text, 150, 150);
@@ -88,7 +98,14 @@ public class DemoGame extends GameApplication {
     @Override
     protected void initPhysics() {
         onCollisionBegin(Type.PLAYER, Type.ENEMY, (p, e) -> {
-            e.removeFromWorld();
+            animationBuilder()
+                    .onFinished(() -> e.removeFromWorld())
+                    .duration(Duration.seconds(2))
+                    .interpolator(Interpolators.EXPONENTIAL.EASE_OUT())
+                    .scale(e)
+                    .from(new Point2D(1, 1))
+                    .to(new Point2D(0, 0))
+                    .buildAndPlay();
 
             inc("score", +1);
         });
