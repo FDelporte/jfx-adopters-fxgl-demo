@@ -3,11 +3,13 @@ package be.webtechie.jfxadoptersfxgldemo;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.dsl.FXGL;
+import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.gesturerecog.HandTrackingService;
+import javafx.scene.shape.Circle;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
 
-public class DemoGame extends GameApplication {
+public class DemoCamera extends GameApplication {
 
     public static void main(String[] args) {
         launch(args);
@@ -18,7 +20,6 @@ public class DemoGame extends GameApplication {
         settings.setWidth(1280);
         settings.setHeight(720);
 
-        //settings.addEngineService(TextToSpeechService.class);
         settings.addEngineService(HandTrackingService.class);
     }
 
@@ -28,21 +29,28 @@ public class DemoGame extends GameApplication {
 
     @Override
     protected void initGame() {
-        var counter = new AtomicInteger(0);
+        var circle = spawnCircle(50, 50);
+
         var service = FXGL.getService(HandTrackingService.class);
-        /*service.readyProperty().addListener((a, b, c)
-                        -> FXGL.run(() -> {
-                    counter.getAndIncrement();
-                    System.out.println("Test " + counter.get());
-                    service.speak("Hello JFX Adopters Meeting, this is the " + counter.get() + " run");
-                }, Duration.seconds(5))
-        );*/
-        service.addInputHandler((hand) -> System.out.println(hand.getPoints()));
+        service.addInputHandler((hand) -> {
+            System.out.println(hand.getPoints());
+            var pointsHand = hand.getPoints().getFirst();
+            circle.setX((1 - pointsHand.getX()) * getAppWidth());
+            circle.setY(pointsHand.getY() * getAppHeight());
+        });
         service.start();
     }
 
     @Override
     protected void initPhysics() {
 
+    }
+
+    private Entity spawnCircle(double x, double y) {
+        return entityBuilder()
+                .at(x, y)
+                .viewWithBBox(new Circle(40, 40, 20))
+                .collidable()
+                .buildAndAttach();
     }
 }
